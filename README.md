@@ -156,13 +156,13 @@ SEND_PROJECTS_TO_CHAT=
 
 `BIGGER_CONTEXT_LLM_MODEL` - Модель с увеличенным контекстным окном
 
-`BOT_ADAPTER_ENABLED`- Флаг для включения или выключения интеграции с сервисом-адаптером (`true` — интеграция работает, `false` — фоновый опрос отключен).
+`COMMUNITY_BACKEND_INTEGRATION_ENABLED`- Флаг для включения или выключения интеграции с сервисом-адаптером (`true` — интеграция работает, `false` — фоновый опрос отключен).
 
-`BOT_ADAPTER_URL`- Базовый веб-адрес (URL) сервиса-адаптера
+`COMMUNITY_BACKEND_INTEGRATION_ROOT_URL`- Базовый веб-адрес (URL) сервиса-адаптера
 
-`BOT_ADAPTER_USER`- Логин для авторизации в REST API адаптера по протоколу Basic Auth
+`COMMUNITY_BACKEND_INTEGRATION_BASIC_AUTH_USERNAME`- Логин для авторизации в REST API адаптера по протоколу Basic Auth
 
-`BOT_ADAPTER_PASSWORD`- Пароль для авторизации в REST API адаптера по протоколу Basic Auth
+`COMMUNITY_BACKEND_INTEGRATION_BASIC_AUTH_PASSWORD`- Пароль для авторизации в REST API адаптера по протоколу Basic Auth
 
 5. Поднять БД в контейнере командой
 
