@@ -23,3 +23,9 @@ telegram_errors_total = Counter(
     "Total number of unhandled exceptions caught by the error handler",
     ["exception_type"]
 )
+
+telegram_tasks_processed_total = Counter(
+    "telegram_tasks_processed_total",
+    "Total number of successfully processed Telegram tasks",
+    ["task_type"]
+)

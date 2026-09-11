@@ -8,13 +8,13 @@ from src.config.env import (
     POSTGRES_PORT,
 )
 
-# db = DB(
-#     dbname=POSTGRES_DB,
-#     host=POSTGRES_HOST,
-#     port=int(POSTGRES_PORT),
-#     user=POSTGRES_USER,
-#     passwd=POSTGRES_PASSWORD,
-# )
+db = DB(
+    dbname=POSTGRES_DB,
+    host=POSTGRES_HOST,
+    port=int(POSTGRES_PORT),
+    user=POSTGRES_USER,
+    passwd=POSTGRES_PASSWORD,
+)
 
 
 def find_reply_by_language_and_project(language: str, project: str) -> str | None:

@@ -2,23 +2,26 @@ import logging
 
 import httpx
 
-from src.config.env import BOT_ADAPTER_ENABLED, BOT_ADAPTER_URL, BOT_ADAPTER_USER, BOT_ADAPTER_PASSWORD
+from src.config.env import COMMUNITY_BACKEND_INTEGRATION_ENABLED, COMMUNITY_BACKEND_INTEGRATION_ROOT_URL, \
+    COMMUNITY_BACKEND_INTEGRATION_BASIC_AUTH_USERNAME, COMMUNITY_BACKEND_INTEGRATION_BASIC_AUTH_PASSWORD
+from src.metrics.metric_definitions import telegram_tasks_processed_total
 
 log = logging.getLogger(__name__)
 
 
 async def fetch_and_process_tasks():
-    if str(BOT_ADAPTER_ENABLED).lower() != "true":
+    if str(COMMUNITY_BACKEND_INTEGRATION_ENABLED).lower() != "true":
         return
 
-    if not BOT_ADAPTER_URL or not BOT_ADAPTER_USER or not BOT_ADAPTER_PASSWORD:
-        log.error("Configuration error: BOT_ADAPTER_URL, USER, or PASSWORD is not set in .env")
+    if not COMMUNITY_BACKEND_INTEGRATION_ROOT_URL or not COMMUNITY_BACKEND_INTEGRATION_BASIC_AUTH_USERNAME or not COMMUNITY_BACKEND_INTEGRATION_BASIC_AUTH_PASSWORD:
+        log.error("Configuration error: COMMUNITY_BACKEND_INTEGRATION_ROOT_URL, USER, or PASSWORD is not set in .env")
         return
 
-    base_url = BOT_ADAPTER_URL.rstrip('/')
+    base_url = COMMUNITY_BACKEND_INTEGRATION_ROOT_URL.rstrip('/')
     url = f"{base_url}/api/telegram-bot-adapter/tasks"
-    params = {"count": count}
-    auth = httpx.BasicAuth(BOT_ADAPTER_USER, BOT_ADAPTER_PASSWORD)
+    params = {"count": 10}
+    auth = httpx.BasicAuth(COMMUNITY_BACKEND_INTEGRATION_BASIC_AUTH_USERNAME,
+                           COMMUNITY_BACKEND_INTEGRATION_BASIC_AUTH_PASSWORD)
 
     try:
         async with httpx.AsyncClient(auth=auth, timeout=5.0) as client:
@@ -26,15 +29,16 @@ async def fetch_and_process_tasks():
             response.raise_for_status()
 
             data = response.json()
-            task_count = data.get("count", 0)
             tasks = data.get("tasks", [])
 
-            if task_count == 0 or not tasks:
+            if not tasks:
                 return
 
             for task in tasks:
                 task_type = task.get("task_type", "unknown_type")
                 payload = task.get("payload", {})
+                await process_task(task_type, payload)
+                telegram_tasks_processed_total.labels(task_type=task_type).inc()
 
                 log.info(f"Received task from adapter [type: {task_type}]: {payload}")
 
@@ -51,3 +55,7 @@ async def fetch_and_process_tasks():
     except Exception as exc:
         exception_name = type(exc).__name__
         log.error("Unexpected error occurred during task processing: %s", exception_name)
+
+
+async def process_task(task_type=None, payload=None):
+    pass
