@@ -62,6 +62,11 @@ METRICS_PORT: int = os.getenv("METRICS_PORT")
 DEFAULT_LLM_MODEL: str = os.getenv("DEFAULT_LLM_MODEL")
 BIGGER_CONTEXT_LLM_MODEL: str = os.getenv("BIGGER_CONTEXT_LLM_MODEL")
 
+BOT_ADAPTER_ENABLED: bool = os.getenv("BOT_ADAPTER_ENABLED", "false").lower() == "true"
+BOT_ADAPTER_URL: str = os.getenv("BOT_ADAPTER_URL")
+BOT_ADAPTER_USER: str = os.getenv("BOT_ADAPTER_USER")
+BOT_ADAPTER_PASSWORD: str = os.getenv("BOT_ADAPTER_PASSWORD")
+
 assert TELEGRAM_BOT_TOKEN is not None, "TELEGRAM_BOT_TOKEN environment variable is not set"
 
 assert MAIN_CHANNEL_CHAT_ID is not None, "MAIN_CHANNEL_CHAT_ID environment variable is not set"
@@ -110,3 +115,7 @@ assert METRICS_PORT is not None, "METRICS_PORT environment variable is not set"
 
 assert DEFAULT_LLM_MODEL is not None, "DEFAULT_LLM_MODEL environment variable is not set"
 assert BIGGER_CONTEXT_LLM_MODEL is not None, "BIGGER_CONTEXT_LLM_MODEL environment variable is not set"
+
+assert BOT_ADAPTER_URL is not None, "BOT_ADAPTER_URL environment variable is not set"
+assert BOT_ADAPTER_USER is not None, "BOT_ADAPTER_USER environment variable is not set"
+assert BOT_ADAPTER_PASSWORD is not None, "BOT_ADAPTER_PASSWORD environment variable is not set"
