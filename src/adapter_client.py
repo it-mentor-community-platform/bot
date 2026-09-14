@@ -28,7 +28,7 @@ async def fetch_and_process_tasks():
                 return
 
             for task in tasks:
-                task_type = task.get("taskType", "unknown_type")
+                task_type = task.get("task_type", "unknown_type")
                 log.info(
                     f"Incoming task: '{task}'"
                 )
