@@ -30,7 +30,7 @@ async def fetch_and_process_tasks():
             for task in tasks:
                 task_type = task.get("taskType", "unknown_type")
                 log.info(
-                    f"Incoming task type: '{task_type}'"
+                    f"Incoming task: '{task}'"
                 )
                 payload = task.get("payload", {})
                 await process_task(task_type, payload)
