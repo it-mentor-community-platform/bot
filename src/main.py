@@ -11,7 +11,7 @@ from telegram.ext import (
 )
 
 from src.config import logs
-from src.config.env import TELEGRAM_BOT_TOKEN, METRICS_PORT
+from src.config.env import TELEGRAM_BOT_TOKEN, METRICS_PORT, COMMUNITY_BACKEND_INTEGRATION_ENABLED
 from src.custom_filters import EDITED_MESSAGE, MESSAGE_REACTION
 from src.handler.add_project_handler import ADD_PROJECT_COMMAND_NAME, add_project
 from src.handler.ai_handler import (
@@ -133,7 +133,9 @@ async def main() -> None:
     async with asyncio.TaskGroup() as tg:
         tg.create_task(start_bot())
         tg.create_task(start_metrics_server())
-        tg.create_task(start_adapter_polling())
+        if str(COMMUNITY_BACKEND_INTEGRATION_ENABLED).lower() == "true":
+            log.info("Backend integration is enabled. Starting adapter polling...")
+            tg.create_task(start_adapter_polling())
 
 
 if __name__ == "__main__":

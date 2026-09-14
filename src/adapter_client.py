@@ -10,12 +10,6 @@ log = logging.getLogger(__name__)
 
 
 async def fetch_and_process_tasks():
-    if str(COMMUNITY_BACKEND_INTEGRATION_ENABLED).lower() != "true":
-        return
-
-    if not COMMUNITY_BACKEND_INTEGRATION_ROOT_URL or not COMMUNITY_BACKEND_INTEGRATION_BASIC_AUTH_USERNAME or not COMMUNITY_BACKEND_INTEGRATION_BASIC_AUTH_PASSWORD:
-        log.error("Configuration error: COMMUNITY_BACKEND_INTEGRATION_ROOT_URL, USER, or PASSWORD is not set in .env")
-        return
 
     base_url = COMMUNITY_BACKEND_INTEGRATION_ROOT_URL.rstrip('/')
     url = f"{base_url}/api/telegram-bot-adapter/tasks"
@@ -29,18 +23,18 @@ async def fetch_and_process_tasks():
             response.raise_for_status()
 
             data = response.json()
-            tasks = data.get("tasks", [])
-
+            tasks = data.get("tasks")
             if not tasks:
                 return
 
             for task in tasks:
-                task_type = task.get("task_type", "unknown_type")
+                task_type = task.get("taskType", "unknown_type")
+                log.info(
+                    f"Incoming task type: '{task_type}'"
+                )
                 payload = task.get("payload", {})
                 await process_task(task_type, payload)
                 telegram_tasks_processed_total.labels(task_type=task_type).inc()
-
-                log.info(f"Received task from adapter [type: {task_type}]: {payload}")
 
     except httpx.HTTPStatusError as exc:
         try:
@@ -58,4 +52,8 @@ async def fetch_and_process_tasks():
 
 
 async def process_task(task_type=None, payload=None):
+    log.info(
+        f"Processing task '{task_type}' successfully parsed. "
+        f"Payload:\n{payload}"
+    )
     pass
