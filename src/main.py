@@ -133,7 +133,7 @@ async def main() -> None:
     async with asyncio.TaskGroup() as tg:
         tg.create_task(start_bot())
         tg.create_task(start_metrics_server())
-        if str(COMMUNITY_BACKEND_INTEGRATION_ENABLED).lower() == "true":
+        if COMMUNITY_BACKEND_INTEGRATION_ENABLED:
             log.info("Backend integration is enabled. Starting adapter polling...")
             tg.create_task(start_adapter_polling())
 
