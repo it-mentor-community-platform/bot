@@ -10,7 +10,7 @@ from telegram.ext import ContextTypes
 from src.config import env
 from src.config import constants
 from src.google_sheet import google_sheet_service
-from src import repository
+from src import adapter_client, repository
 
 ADD_PROJECT_COMMAND_NAME = "addproject"
 
@@ -120,7 +120,25 @@ async def add_project(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
 
     try:
-        google_sheet_service.add_project(project_name, language, project_link)
+        if env.ADD_PROJECT_VIA_COMMUNITY_BACKEND:
+            project_author = student_message.from_user
+            if project_author is None:
+                log.error(
+                    "Cannot determine project author for %s command",
+                    ADD_PROJECT_COMMAND_NAME,
+                )
+                await reply_with_error("Не удалось определить автора проекта")
+                return
+
+            await adapter_client.create_project(
+                author_telegram_user_id=project_author.id,
+                author_telegram_username=project_author.username,
+                github_repository_url=project_link,
+                programming_language=language,
+                roadmap_project=project_name,
+            )
+        else:
+            google_sheet_service.add_project(project_name, language, project_link)
 
         _ = await context.bot.delete_message(
             chat_id=chat.id,
@@ -143,6 +161,29 @@ async def add_project(update: Update, context: ContextTypes.DEFAULT_TYPE):
             reply_to_message_id=student_message.id,
             parse_mode=ParseMode.MARKDOWN_V2,
         )
+    except adapter_client.DuplicateProjectError:
+        log.info(
+            "Duplicate project rejected for %s command",
+            ADD_PROJECT_COMMAND_NAME,
+        )
+        await reply_with_error("Этот проект уже добавлен")
+        return
+    except adapter_client.InvalidProjectRequestError:
+        log.info(
+            "Invalid project request rejected for %s command",
+            ADD_PROJECT_COMMAND_NAME,
+        )
+        await reply_with_error(
+            "Не удалось добавить проект: проверьте ссылку, язык и название проекта"
+        )
+        return
+    except adapter_client.ProjectBackendError:
+        log.error(
+            "Community backend failed for %s command",
+            ADD_PROJECT_COMMAND_NAME,
+        )
+        await reply_with_error("Сервис проектов временно недоступен. Попробуйте позже")
+        return
     except Exception as e:
         file_name, line_number, func_name, _ = traceback.extract_tb(sys.exc_info()[2])[
             -1

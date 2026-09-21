@@ -104,6 +104,7 @@ GITHUB_COMMUNITY_BOT_ACCESS_TOKEN=
 QUESTIONS_POPULARITY_UPDATE_ALLOWED_USER_IDS=
 
 SEND_PROJECTS_TO_CHAT=
+ADD_PROJECT_VIA_COMMUNITY_BACKEND=false
 ```
 
 `PROJECTS_REVIEWS_SPREADSHEET_ID` - Строка без пробелов содержащая в себе id файла google sheet из google drive который подключается с помощью google api.
@@ -147,6 +148,8 @@ SEND_PROJECTS_TO_CHAT=
 `QUESTIONS_POPULARITY_UPDATE_ALLOWED_USER_IDS` - Юзеры, которые могут пользоваться командой обновления популярности вопросов. Указывается через запятую без пробелов = 322,511,987
 
 `SEND_PROJECTS_TO_CHAT` - Контролирует нужно ли пересылать сообщения пользователей в чат указанный в `PROJECTS_REVIEWS_COLLECTION_CHAT_ID` при использовании команды /addproject. Любое значение кроме `true` расценивается как `false`. Дефолтное значение `false`
+
+`ADD_PROJECT_VIA_COMMUNITY_BACKEND` - Переключает `/addproject` с прямой записи в Google Sheets на вызов Community Backend. Любое значение кроме `true` расценивается как `false`. Дефолтное значение `false`
 
 `METRICS_USER` - Имя пользователя, которое надо ввести для доступа к странице /metrics
 

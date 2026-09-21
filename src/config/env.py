@@ -53,6 +53,10 @@ QUESTIONS_POPULARITY_UPDATE_ALLOWED_USER_IDS: str = os.getenv("QUESTIONS_POPULAR
 
 SEND_PROJECTS_TO_CHAT: bool = os.getenv("SEND_PROJECTS_TO_CHAT", "false").lower() == "true"
 
+ADD_PROJECT_VIA_COMMUNITY_BACKEND: bool = os.getenv(
+    "ADD_PROJECT_VIA_COMMUNITY_BACKEND", "false"
+).lower() == "true"
+
 AI_COMMAND_STICKER_REPLY: bool = os.getenv("AI_COMMAND_STICKER_REPLY", "false").lower() == "true"
 
 METRICS_USER: str = os.getenv("METRICS_USER")
