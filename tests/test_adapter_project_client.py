@@ -1,7 +1,8 @@
 from __future__ import annotations
 
 import asyncio
-from typing import Any
+from types import TracebackType
+from typing import ClassVar, TypedDict, override
 
 import httpx
 import pytest
@@ -9,21 +10,41 @@ import pytest
 from src import adapter_client
 
 
+class ProjectRequest(TypedDict):
+    author_telegram_user_id: int
+    author_telegram_username: str | None
+    github_repository_url: str
+    programming_language: str
+    roadmap_project: str
+
+
+class ProjectCall(TypedDict):
+    url: str
+    json: ProjectRequest
+
+
 class FakeAsyncClient:
-    response: httpx.Response
-    calls: list[dict[str, Any]] = []
-    init_kwargs: list[dict[str, Any]] = []
+    response: ClassVar[httpx.Response] = httpx.Response(500)
+    calls: ClassVar[list[ProjectCall]] = []
+    init_auth: ClassVar[httpx.BasicAuth | None] = None
+    init_timeout: ClassVar[float | None] = None
 
-    def __init__(self, **kwargs: Any) -> None:
-        type(self).init_kwargs.append(kwargs)
+    def __init__(self, *, auth: httpx.BasicAuth, timeout: float) -> None:
+        type(self).init_auth = auth
+        type(self).init_timeout = timeout
 
-    async def __aenter__(self) -> "FakeAsyncClient":
+    async def __aenter__(self) -> FakeAsyncClient:
         return self
 
-    async def __aexit__(self, *args: Any) -> None:
+    async def __aexit__(
+        self,
+        _exc_type: type[BaseException] | None,
+        _exc_value: BaseException | None,
+        _traceback: TracebackType | None,
+    ) -> None:
         return None
 
-    async def post(self, url: str, json: dict[str, Any]) -> httpx.Response:
+    async def post(self, url: str, *, json: ProjectRequest) -> httpx.Response:
         type(self).calls.append({"url": url, "json": json})
         return type(self).response
 
@@ -31,8 +52,9 @@ class FakeAsyncClient:
 @pytest.fixture(autouse=True)
 def fake_http_client(monkeypatch: pytest.MonkeyPatch) -> None:
     FakeAsyncClient.calls = []
-    FakeAsyncClient.init_kwargs = []
-    monkeypatch.setattr(adapter_client.httpx, "AsyncClient", FakeAsyncClient)
+    FakeAsyncClient.init_auth = None
+    FakeAsyncClient.init_timeout = None
+    monkeypatch.setattr(httpx, "AsyncClient", FakeAsyncClient)
 
 
 def create_project() -> None:
@@ -64,8 +86,8 @@ def test_create_project_uses_expected_request_and_basic_auth() -> None:
             },
         }
     ]
-    assert FakeAsyncClient.init_kwargs[0]["timeout"] == 5.0
-    assert isinstance(FakeAsyncClient.init_kwargs[0]["auth"], httpx.BasicAuth)
+    assert FakeAsyncClient.init_timeout == 5.0
+    assert isinstance(FakeAsyncClient.init_auth, httpx.BasicAuth)
 
 
 def test_create_project_accepts_created_response() -> None:
@@ -95,11 +117,13 @@ def test_create_project_maps_backend_errors(
 
 def test_create_project_maps_network_error(monkeypatch: pytest.MonkeyPatch) -> None:
     class RequestErrorClient(FakeAsyncClient):
-        async def post(self, url: str, json: dict[str, Any]) -> httpx.Response:
+        @override
+        async def post(self, url: str, *, json: ProjectRequest) -> httpx.Response:
+            _ = json
             request = httpx.Request("POST", url)
             raise httpx.RequestError("network", request=request)
 
-    monkeypatch.setattr(adapter_client.httpx, "AsyncClient", RequestErrorClient)
+    monkeypatch.setattr(httpx, "AsyncClient", RequestErrorClient)
 
     with pytest.raises(adapter_client.ProjectBackendUnavailableError):
         create_project()
