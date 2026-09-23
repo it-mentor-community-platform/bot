@@ -1,39 +1,62 @@
-## Информация
+# Bot
 
-> [!IMPORTANT]  
-> Проект разработан на версии python == 3.12, работоспособность на других версиях не гарантируется (на 3.13 проект не запускается)
+Будущий основной интерфейс взаимодействия с платформой сообщества
 
-- Создание бота и получение токена - https://t.me/BotFather
-- При создании бота нужно отправить BotFather команду `/setinline`, иначе бот не будет работать через `@` в чате
-- Бот должен быть админом в чатах в которых вызываются его команды и в чате в который он будет пересылать сообщения
-- [yoyo-migrations документация](https://ollycope.com/software/yoyo/latest/)
+## Стэк
 
-### Как Получить JSON токен google API для подключения?
+- Python == 3.12 (строго 3.12)
+- PostgreSQL
+- [Python Telegram Bot](https://docs.python-telegram-bot.org/en/stable)
+- [Yoyo migrations](https://ollycope.com/software/yoyo/latest)
+- [gspread](https://docs.gspread.org/en/latest/index.html)
+- [OpenAI Python SDK](https://github.com/openai/openai-python)
 
-[gspread auth docs](https://docs.gspread.org/en/latest/oauth2.html#for-bots-using-service-account)
+## Документация
 
-Для этого Нужно перейти на:
+- [Описание интеграции с основным бэкендом платформы](https://github.com/it-mentor-community-platform/meta/blob/main/system-analytics/telegram-bot-integration.md)
+- [Описание REST API адаптера](https://github.com/it-mentor-community-platform/meta/blob/main/system-analytics/services/telegram-bot-adapter/index.md)
 
-- https://console.cloud.google.com/projectselector2/apis/dashboard?supportedpurview=project
-- Далее в: API & Services > Переходим: Credentials > Создаем: Create credentials > Service account key
-- Заполняем все необходимые поля
-- Нажимаем Done 
-- Нажимаем “Manage service accounts” над Service Accounts.
-- В открывшейся таблице кликаем 3 точки > Manage Keys
-- ADD KEY > Create new key > JSON
+## Функционал
 
-Мы получим JSON файл с API Key
+1. Добавление проектов в таблицу [Проекты и ревью](https://docs.google.com/spreadsheets/d/1E66YrdvO7B_j0Ykge-JJDMtB1RfKhIzN_SsO7UPDbrU); `/addproject`
+2. Генерация сообщения итогов месяца по сданным проектам по данным из таблицы [Проекты и ревью](https://docs.google.com/spreadsheets/d/1E66YrdvO7B_j0Ykge-JJDMtB1RfKhIzN_SsO7UPDbrU); `projectsmonthlysummary`
+3. Генерация сообщения итогов месяца по сделанным ревью по данным из таблицы [Проекты и ревью](https://docs.google.com/spreadsheets/d/1E66YrdvO7B_j0Ykge-JJDMtB1RfKhIzN_SsO7UPDbrU); `reviewsmonthlysummary`
+4. Генерация сообщений со списком вопросов по данным из таблицы [Java методичка](https://docs.google.com/spreadsheets/d/1mcTcg9dR7Hv265h4ei5Ioyx9V94SnhCCYcG4zNo2bAk), которая служит источником данных для сайта [Java методичка](https://zhukovsd.github.io/java-backend-interview-prep); `/interviewprepquestionslist`
+5. Генерация сообщений со списком вопросов по данным из таблицы [Python методичка](https://docs.google.com/spreadsheets/d/1qVIahkSxHPFEAmMAzNNLvBUD8pe4oaG0fG6A_LZaPoc), которая служит источником данных для сайта [Python методичка](https://zhukovsd.github.io/python-backend-interview-prep); `/interviewprepquestionslist`
+6. Генерация сообщения со списком собеседований на которых задавали конкретный вопрос по данным из таблиц [Java методичка](https://docs.google.com/spreadsheets/d/1mcTcg9dR7Hv265h4ei5Ioyx9V94SnhCCYcG4zNo2bAk) и [Python методичка](https://docs.google.com/spreadsheets/d/1qVIahkSxHPFEAmMAzNNLvBUD8pe4oaG0fG6A_LZaPoc); `/q`, `/qp`
+7. Добавление новых проектов и ревью в [Репозиторий Java роадмапа](https://github.com/zhukovsd/java-backend-learning-course) через PR c помощью [аккаунта бота](https://github.com/zhukovsd-it-mentor-community-bot) на основании данных из таблицы [Проекты и ревью](https://docs.google.com/spreadsheets/d/1E66YrdvO7B_j0Ykge-JJDMtB1RfKhIzN_SsO7UPDbrU); `/updatefinishedprojects`
+8. Добавление новых проектов и ревью в [Репозиторий Python роадмапа](https://github.com/zhukovsd/python-backend-learning-course) через PR c помощью [аккаунта бота](https://github.com/zhukovsd-it-mentor-community-bot) на основании данных из таблицы [Проекты и ревью](https://docs.google.com/spreadsheets/d/1E66YrdvO7B_j0Ykge-JJDMtB1RfKhIzN_SsO7UPDbrU); `/updatefinishedprojects`
+9. Добавление новых проектов и ревью в [Репозиторий Go роадмапа](https://github.com/zhukovsd/golang-backend-learning-course) через PR c помощью [аккаунта бота](https://github.com/zhukovsd-it-mentor-community-bot) на основании данных из таблицы [Проекты и ревью](https://docs.google.com/spreadsheets/d/1E66YrdvO7B_j0Ykge-JJDMtB1RfKhIzN_SsO7UPDbrU); `/updatefinishedprojects`
+10. Пересылка запроса юзера в MCP сервер сообщества (приватный репозиторий); `/ai`
+11. [**В процессе разработки**] Запуск REST API тестов для задеплоенного проекта роадмапа с помощью отдельного [test-runner'а](https://github.com/zhukovsd/roadmap-projects-api-tests-runner); `/runtests`
 
-##### Обязательно
 
-Нужно будет добавить к пользователям Email из API Key в ключе `client_email`
-Делать это стоит конкретно к таблице с которой мы будем работать, либо к папке с таблицами в которой мы будем работать
+[**Deprecated**] Обновления популярности списка вопросов в [Репозитории Java методичка](https://github.com/zhukovsd/java-backend-interview-prep), который служит источником данных для сайта [Java методички](https://zhukovsd.github.io/java-backend-interview-prep) через PR c помощью [аккаунта бота](https://github.com/zhukovsd-it-mentor-community-bot) на основании данных из таблицы [Java методичка](https://docs.google.com/spreadsheets/d/1mcTcg9dR7Hv265h4ei5Ioyx9V94SnhCCYcG4zNo2bAk)
 
-Также надо перейти в 
+## Сетап секретов
 
-- API & Services > Library
-- Ввести `Google Drive API` и `Google Sheets API` в поиск
-- И включить эти две либы (Нажать Enable) 
+Основные секреты должны быть доступны на доске [local-stack-secrets](https://github.com/orgs/it-mentor-community-platform/projects/9)
+
+Секреты с комментариями "доступны по запросу" выдаются отдельно
+
+Для локального тестирования любой команды которая затрагивает Google таблицы нужно сделать следующее:
+
+1. Открыть оригинальную таблицу
+2. В меню выбрать `Файл` -> `Создать копию`
+3. Из адресной строки новой таблицы скопировать ID (между `/d/` и `/edit`)
+4. Добавить ID копии таблицы в `.env` файл
+5. Скопировать `client_email` поле сервисного аккаунта (выглядит как `name@project.iam.gserviceaccount.com`) из `.env` файла
+6. Открыть копию таблицы в браузере, нажать `Поделиться` и добавить этот email с правами `Редактор`
+
+Для локального тестирования любой команды которая затрагивает GitHub репозитории нужно сделать следующее:
+
+1. Открыть ссылку на оригинальный репозиторий
+2. Нажать кнопку `Fork`
+3. Поставить переменную окружения для соответствующего репозитория в `.env` файле
+4. Перейти в `Settings` -> `Collaborators` -> `Add people`
+5. Найти в поиске и добавить [it-mentor-community-bot-dev](https://github.com/it-mentor-community-bot-dev)
+6. Пингануть `@krios2146` в чате командного проекта (владелец аккаунта `it-mentor-community-bot-dev`)
+7. Ожидать принятия реквеста коллаборатора
 
 ## Локальный запуск 
 
@@ -51,118 +74,13 @@ source venv/bin/activate
 
 https://www.jetbrains.com/help/pycharm/configuring-python-interpreter.html#widget
 
-3. Установить зависимости (если pycharm не сделал это автоматически) 
+3. Установить зависимости (если pycharm не сделал это автоматически)
 
 ```bash
 pip install -r requirements.txt
 ```
 
-4. Создать `.env` файл в корне проекта. Он будет использоваться только для локального запуска
-
-```env
-TELEGRAM_BOT_TOKEN=
-
-POSTGRES_USER=
-POSTGRES_PASSWORD=
-POSTGRES_DB=
-POSTGRES_HOST=localhost
-POSTGRES_PORT=
-
-MAIN_CHANNEL_CHAT_ID=
-EMPLOYMENT_MENTORING_CHAT_ID=
-PROJECTS_REVIEWS_COLLECTION_CHAT_ID=
-
-MCP_SERVER_API_KEY=
-MCP_SERVER_URL=
-
-TEST_RUNNER_URL=
-TEST_RUNNER_API_KEY=
-
-ADD_PROJECT_ALLOWED_USER_IDS=
-
-GOOGLE_SERVICE_ACCOUNT_JSON_KEY=
-PROJECTS_REVIEWS_SPREADSHEET_ID=
-JAVA_INTERVIEW_COLLECTION_SPREADSHEET_ID=
-PYTHON_INTERVIEW_COLLECTION_SPREADSHEET_ID=
-
-SEARCH_INTERVIEW_QUESTIONS_COMMAND_CHAT_IDS=
-
-INTERVIEW_PREP_SITE_REPO_OWNER=
-INTERVIEW_PREP_SITE_REPO_NAME=
-
-JAVA_BACKEND_COURSE_SITE_REPO_OWNER=
-JAVA_BACKEND_COURSE_SITE_REPO_NAME=
-
-PYTHON_BACKEND_COURSE_SITE_REPO_OWNER=
-PYTHON_BACKEND_COURSE_SITE_REPO_NAME=
-
-GOLANG_BACKEND_COURSE_SITE_REPO_OWNER=
-GOLANG_BACKEND_COURSE_SITE_REPO_NAME=
-
-GITHUB_COMMUNITY_BOT_ACCESS_TOKEN=
-
-QUESTIONS_POPULARITY_UPDATE_ALLOWED_USER_IDS=
-
-SEND_PROJECTS_TO_CHAT=
-```
-
-`PROJECTS_REVIEWS_SPREADSHEET_ID` - Строка без пробелов содержащая в себе id файла google sheet из google drive который подключается с помощью google api.
-- id достается из url самой таблицы при открытии в браузере на ПК
-`ADD_PROJECT_ALLOWED_USER_IDS` - Список id юзеров, которые могут пользоваться командой. Указывается через запятую без пробелов = 322,511,987
-`PROJECTS_REVIEWS_COLLECTION_CHAT_ID` - ID Чата куда пересылаем ответное сообщение. Указывать можно в виде списка по аналогии с 
-`ADD_PROJECT_ALLOWED_USER_IDS`
-- **Не добавлять сюда** ID другого **чат бота** или того же самого который используется
-
-`GOOGLE_SERVICE_ACCOUNT_JSON_KEY` - JSON строка формата:
-```json
-{
-  "type": "service_account",
-  "project_id": "it-menthor-community-bot",
-  "private_key_id": "",
-  "private_key": "",
-  "client_email": "",
-  "client_id": "",
-  "auth_uri": "",
-  "token_uri": "",
-  "auth_provider_x509_cert_url": "",
-  "client_x509_cert_url": "",
-  "universe_domain": ""
-}
-```
-
-`INTERVIEW_PREP_SITE_REPO_OWNER` - Владелец репозитория с методичкой
-`INTERVIEW_PREP_SITE_REPO_NAME` - Название репозитория с методичкой
-
-`JAVA_BACKEND_COURSE_SITE_REPO_OWNER` - Владелец репозитория с java роадмапом
-`JAVA_BACKEND_COURSE_SITE_REPO_NAME` - Название репозитория с java роадмапом
-
-`PYTHON_BACKEND_COURSE_SITE_REPO_OWNER` - Владелец репозитория с python роадмапом
-`PYTHON_BACKEND_COURSE_SITE_REPO_NAME` - Название репозитория с python роадмапом
-
-`GOLANG_BACKEND_COURSE_SITE_REPO_OWNER` - Владелец репозитория с go роадмапом
-`GOLANG_BACKEND_COURSE_SITE_REPO_NAME` - Название репозитория с go роадмапом
-
-`GITHUB_COMMUNITY_BOT_ACCESS_TOKEN` - Classic token авторизации GitHub аккаунта бота с которого будет создаваться PR в репозиторий методички. Обязательный scope - repo. Аккаунт бота должен иметь роль collaborator в настройках репозитория куда он должен сделать PR
-
-`QUESTIONS_POPULARITY_UPDATE_ALLOWED_USER_IDS` - Юзеры, которые могут пользоваться командой обновления популярности вопросов. Указывается через запятую без пробелов = 322,511,987
-
-`SEND_PROJECTS_TO_CHAT` - Контролирует нужно ли пересылать сообщения пользователей в чат указанный в `PROJECTS_REVIEWS_COLLECTION_CHAT_ID` при использовании команды /addproject. Любое значение кроме `true` расценивается как `false`. Дефолтное значение `false`
-
-`METRICS_USER` - Имя пользователя, которое надо ввести для доступа к странице /metrics
-
-`METRICS_PASS` - Пароль для доступа к странице /metrics
-
-`DEFAULT_LLM_MODEL` - Основная модель для повседневных задач
-
-`BIGGER_CONTEXT_LLM_MODEL` - Модель с увеличенным контекстным окном
-
-`COMMUNITY_BACKEND_INTEGRATION_ENABLED`- Флаг для включения или выключения интеграции с сервисом-адаптером (`true` — интеграция работает, `false` — фоновый опрос отключен).
-
-`COMMUNITY_BACKEND_INTEGRATION_ROOT_URL`- Базовый веб-адрес (URL) сервиса-адаптера
-
-`COMMUNITY_BACKEND_INTEGRATION_BASIC_AUTH_USERNAME`- Логин для авторизации в REST API адаптера по протоколу Basic Auth
-
-`COMMUNITY_BACKEND_INTEGRATION_BASIC_AUTH_PASSWORD`- Пароль для авторизации в REST API адаптера по протоколу Basic Auth
+4. Создать `.env` файл в корне проекта. Он будет использоваться только для локального запуска. Структура представлена в `.example.env` файле
 
 5. Поднять БД в контейнере командой
 
@@ -173,30 +91,10 @@ docker compose -f docker-compose-dev.yaml up -d
 6. Сделать миграцию для БД. Использовать те же данные, которые указаны в `.env` файле
 
 ```bash
-yoyo apply --database postgresql://user:password@localhost:5433/database-name ./migrations
+yoyo apply --database postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB} ./migrations
 ```
 
 7. Запустить проект
 
  - C помощью UI pycharm
  - Через `python -m src.main`
-
----
-
-## Запуск в докере 
-
-1. Создать `.env.prod` файл в корне проекта. 
-
-`.env.prod` аналогичен `.env` файлу описанному в [4 пункте локального запуска](#локальный-запуск)
-
-2. Собрать образ бота
-
-```bash
-docker build -t zhukovsd/it-mentor-community-bot:main .
-```
-
-3. Запустить бота и БД в докер композ
-
-```bash
-docker compose -f docker-compose-prod.yaml --env-file .env.prod up -d
-```
