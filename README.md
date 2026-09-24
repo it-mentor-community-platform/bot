@@ -62,13 +62,13 @@
 
 1. Создать venv
 
-```bash
+```sh
 python -m venv venv
 ```
 
 2. Активировать venv (если pycharm не сделал это автоматически) 
 
-```bash
+```sh
 source venv/bin/activate
 ```
 
@@ -76,7 +76,7 @@ https://www.jetbrains.com/help/pycharm/configuring-python-interpreter.html#widge
 
 3. Установить зависимости (если pycharm не сделал это автоматически)
 
-```bash
+```sh
 pip install -r requirements.txt
 ```
 
@@ -84,14 +84,21 @@ pip install -r requirements.txt
 
 5. Поднять БД в контейнере командой
 
-```bash
+```sh
 docker compose -f docker-compose-dev.yaml up -d
 ```
 
 6. Сделать миграцию для БД. Использовать те же данные, которые указаны в `.env` файле
 
-```bash
+```sh
 yoyo apply --database postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB} ./migrations
+```
+Чтобы переменные в команде подставились автоматически, перед выполнением нужно сделать `source .env`
+
+Либо просто вручную подставить значения из `.env` вместо `${POSTGRES_USER}`:
+
+```sh
+yoyo apply --database postgresql://user:password@localhost:5433/it-mentor-community-bot-database ./migrations
 ```
 
 7. Запустить проект
