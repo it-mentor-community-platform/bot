@@ -11,6 +11,7 @@ from src.config import env
 from src.config import constants
 from src.google_sheet import google_sheet_service
 from src import repository
+from src.github import github_client
 
 ADD_PROJECT_COMMAND_NAME = "addproject"
 
@@ -118,6 +119,31 @@ async def add_project(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if project_link is None:
         await reply_with_error("В сообщении нет ссылки на проект")
         return
+
+    if github_client.is_github_repository_url(project_link):
+        repository_available = await asyncio.to_thread(
+            github_client.is_repository_available,
+            project_link,
+        )
+
+        if repository_available is None:
+            await reply_with_error(
+                "Не удалось проверить доступность GitHub репозитория. Попробуйте позже."
+            )
+            return
+
+        if not repository_available:
+            log.warning("GitHub repository is not public: %s", project_link)
+            _ = await context.bot.send_message(
+                chat_id=chat.id,
+                text="GitHub репозиторий недоступен по приложенной ссылке",
+                reply_to_message_id=student_message.id,
+            )
+            _ = await context.bot.delete_message(
+                chat_id=chat.id,
+                message_id=command_message.id,
+            )
+            return
 
     try:
         google_sheet_service.add_project(project_name, language, project_link)
