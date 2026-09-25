@@ -1,7 +1,9 @@
 import logging
 import base64
+from urllib.parse import urlparse
 
 from requests import Response
+from requests.exceptions import RequestException
 from requests_ratelimiter import BucketFullException, LimiterSession
 
 from src.config.env import INTERVIEW_PREP_SITE_REPO_OWNER
@@ -25,6 +27,59 @@ headers = {
 session = LimiterSession(per_hour=5000, max_delay=0)
 
 log = logging.getLogger(__name__)
+
+
+def is_github_repository_url(repository_url: str) -> bool:
+    return urlparse(repository_url).hostname in {"github.com", "www.github.com"}
+
+
+def is_repository_available(repository_url: str) -> bool | None:
+    if not is_github_repository_url(repository_url):
+        return False
+
+    parsed_url = urlparse(repository_url)
+    path_parts = parsed_url.path.strip("/").split("/")
+
+    if len(path_parts) != 2:
+        return False
+
+    owner, repo = path_parts
+
+    if not owner or not repo:
+        return False
+
+    api_url = f"{BASE_API_URL}/repos/{owner}/{repo}"
+
+    try:
+        response = session.get(api_url, headers=headers, timeout=5)
+    except (RequestException, BucketFullException) as e:
+        log.error("Failed to check GitHub repository '%s/%s': %s", owner, repo, e)
+        return None
+
+    if response.status_code == 404:
+        return False
+
+    if response.status_code != 200:
+        log.error(
+            "GitHub returned %s while checking '%s/%s'",
+            response.status_code,
+            owner,
+            repo,
+        )
+        return None
+
+    try:
+        response_body: dict[str, object] = response.json()
+        is_private = response_body.get("private")
+
+        if not isinstance(is_private, bool):
+            log.error("Invalid GitHub response for '%s/%s'", owner, repo)
+            return None
+
+        return not is_private
+    except (AttributeError, ValueError):
+        log.error("Invalid GitHub response for '%s/%s'", owner, repo)
+        return None
 
 
 def get_file_content(
