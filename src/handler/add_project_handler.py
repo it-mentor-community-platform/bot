@@ -120,11 +120,8 @@ async def add_project(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await reply_with_error("В сообщении нет ссылки на проект")
         return
 
-    if github_client.is_github_repository_url(project_link):
-        repository_available = await asyncio.to_thread(
-            github_client.is_repository_available,
-            project_link,
-        )
+    if "github.com" in project_link:
+        repository_available = github_client.is_repository_available(project_link)
 
         if repository_available is None:
             await reply_with_error(

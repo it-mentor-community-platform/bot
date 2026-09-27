@@ -29,14 +29,7 @@ session = LimiterSession(per_hour=5000, max_delay=0)
 log = logging.getLogger(__name__)
 
 
-def is_github_repository_url(repository_url: str) -> bool:
-    return urlparse(repository_url).hostname in {"github.com", "www.github.com"}
-
-
 def is_repository_available(repository_url: str) -> bool | None:
-    if not is_github_repository_url(repository_url):
-        return False
-
     parsed_url = urlparse(repository_url)
     path_parts = parsed_url.path.strip("/").split("/")
 
@@ -68,18 +61,7 @@ def is_repository_available(repository_url: str) -> bool | None:
         )
         return None
 
-    try:
-        response_body: dict[str, object] = response.json()
-        is_private = response_body.get("private")
-
-        if not isinstance(is_private, bool):
-            log.error("Invalid GitHub response for '%s/%s'", owner, repo)
-            return None
-
-        return not is_private
-    except (AttributeError, ValueError):
-        log.error("Invalid GitHub response for '%s/%s'", owner, repo)
-        return None
+    return True
 
 
 def get_file_content(
