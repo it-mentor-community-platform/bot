@@ -11,6 +11,7 @@ from src.handler import util
 from src.mcp import client as mcp_client
 
 AI_COMMAND = "ai"
+SEARCH_COMMAND = "search"
 
 log = logging.getLogger(__name__)
 
@@ -24,7 +25,11 @@ stickers = [
 ]
 
 
-async def ask_ai(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def ask_ai(
+    update: Update,
+    context: ContextTypes.DEFAULT_TYPE,
+    command_name: str = AI_COMMAND,
+):
     chat = update.effective_chat
     chat_member = update.effective_user
     command_message = update.effective_message
@@ -32,7 +37,7 @@ async def ask_ai(update: Update, context: ContextTypes.DEFAULT_TYPE):
     assert chat is not None, "Chat in which command is called cannot be None"
     assert (
         chat_member is not None
-    ), f"{AI_COMMAND} command should be used by user, it must not be None"
+    ), f"{command_name} command should be used by user, it must not be None"
     assert command_message is not None, "Message that triggered bot cannot be None"
 
     async def reply_with_error(text: str) -> None:
@@ -48,11 +53,11 @@ async def ask_ai(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
         return
 
-    tool_set = get_tool_set_for_chat(chat.id)
+    tool_set = get_tool_set_for_chat(chat.id, command_name)
 
     if tool_set is None:
         log.error(
-            f"{AI_COMMAND} was called outside of allowed chats, in chat: {chat.effective_name}"
+            f"{command_name} was called outside of allowed chats, in chat: {chat.effective_name}"
         )
         await reply_with_error("Команда запрещена в этом чате")
         return
@@ -63,12 +68,12 @@ async def ask_ai(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     assert command_text is not None, "Command text cannot be None"
 
-    message_text = command_text[len("/" + AI_COMMAND) :]
+    message_text = command_text[len("/" + command_name) :]
 
     if len(message_text.strip()) == 0:
-        log.error(f"{AI_COMMAND} was called with no argument, expected 1")
+        log.error(f"{command_name} was called with no argument, expected 1")
         await reply_with_error(
-            f"Команда {AI_COMMAND} должна вызываться с запросом к LLM"
+            f"Команда {command_name} должна вызываться с запросом к LLM"
         )
         return
 
@@ -136,10 +141,25 @@ async def ask_ai(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await asyncio.sleep(1)
 
 
-def get_tool_set_for_chat(chat_id: int) -> mcp_client.ToolSet | None:
+async def search_resources(
+    update: Update,
+    context: ContextTypes.DEFAULT_TYPE,
+):
+    await ask_ai(update, context, SEARCH_COMMAND)
+
+
+def get_tool_set_for_chat(
+    chat_id: int,
+    command_name: str,
+) -> mcp_client.ToolSet | None:
     employment_mentoring_chat_id = int(env.EMPLOYMENT_MENTORING_CHAT_ID)
     global_chat_id = int(env.MAIN_CHANNEL_CHAT_ID)
     projects_group_work_chat_id = int(env.PROJECTS_GROUP_WORK_CHAT_ID)
+
+    if command_name == SEARCH_COMMAND:
+        if chat_id == global_chat_id or chat_id == projects_group_work_chat_id:
+            return mcp_client.ToolSet.RESOURCES
+        return None
 
     if chat_id == employment_mentoring_chat_id:
         return mcp_client.ToolSet.EMPLOYMENT_MENTORING

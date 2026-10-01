@@ -11,12 +11,18 @@ from telegram.ext import (
 )
 
 from src.config import logs
-from src.config.env import TELEGRAM_BOT_TOKEN, METRICS_PORT, COMMUNITY_BACKEND_INTEGRATION_ENABLED
+from src.config.env import (
+    TELEGRAM_BOT_TOKEN,
+    METRICS_PORT,
+    COMMUNITY_BACKEND_INTEGRATION_ENABLED,
+)
 from src.custom_filters import EDITED_MESSAGE, MESSAGE_REACTION
 from src.handler.add_project_handler import ADD_PROJECT_COMMAND_NAME, add_project
 from src.handler.ai_handler import (
     AI_COMMAND,
+    SEARCH_COMMAND,
     ask_ai,
+    search_resources,
 )
 from src.handler.error_handler import error_handler
 from src.handler.interview_questions_list_handler import (
@@ -94,6 +100,7 @@ async def start_bot() -> None:
         UPDATE_FINISHED_PROJECTS_COMMAND, update_finished_projects
     )
     ai_handler = CommandHandler(AI_COMMAND, ask_ai)
+    search_handler = CommandHandler(SEARCH_COMMAND, search_resources)
     run_tests_handler = CommandHandler(RUN_TESTS_COMMAND_NAME, run_tests)
 
     application.add_handler(add_project_handler)
@@ -104,6 +111,7 @@ async def start_bot() -> None:
     application.add_handler(reviews_monthly_summary_handler)
     application.add_handler(update_finished_projects_handler)
     application.add_handler(ai_handler)
+    application.add_handler(search_handler)
     application.add_handler(run_tests_handler)
     application.add_error_handler(error_handler)
 

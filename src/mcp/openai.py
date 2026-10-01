@@ -9,6 +9,7 @@ from openai import (
     RateLimitError,
 )
 from openai.types.shared_params.responses_model import ResponsesModel
+from openai.types.responses import response_create_params
 
 from src.config import env
 from src.metrics.openai_usage import track_llm_metrics
@@ -22,16 +23,31 @@ class ContextExceededError(Exception):
     pass
 
 
-def call_llm(user_input: str, allowed_tools: list[str], model: ResponsesModel) -> str:
+def call_llm(
+    user_input: str,
+    allowed_tools: list[str],
+    model: ResponsesModel,
+    tool_choice: response_create_params.ToolChoice = "auto",
+) -> str:
     try:
+        instructions = (
+            "Do not answer requests that do not require the MCP tool, just explain what you can do. "
+            "Do not ask follow-up questions; your job is to answer, not to continue the dialogue. "
+            "If you do not have enough data or capabilities to fulfill the request, explain it clearly without asking further questions."
+        )
+
+        if allowed_tools == ["find_resources"]:
+            instructions += (
+                " When calling find_resources, derive tags from the user's request. "
+                "Set types to an empty list unless the user explicitly requests a content format. "
+                "Do not invent type values."
+            )
+
         resp = client.responses.create(
-            instructions=(
-                "Do not answer requests that do not require the MCP tool, just explain what you can do. "
-                "Do not ask follow-up questions; your job is to answer, not to continue the dialogue. "
-                "If you do not have enough data or capabilities to fulfill the request, explain it clearly without asking further questions."
-            ),
+            instructions=instructions,
             model=model,
             input=user_input,
+            tool_choice=tool_choice,
             tools=[
                 {
                     "type": "mcp",
@@ -47,7 +63,7 @@ def call_llm(user_input: str, allowed_tools: list[str], model: ResponsesModel) -
         track_llm_metrics(
             model=str(model),
             input_tokens=resp.usage.input_tokens,
-            output_tokens=resp.usage.output_tokens
+            output_tokens=resp.usage.output_tokens,
         )
         return resp.output_text
 
