@@ -31,14 +31,20 @@ def call_llm(
 ) -> str:
     try:
         instructions = (
-            "Do not answer requests that do not require the MCP tool, just explain what you can do. "
             "Do not ask follow-up questions; your job is to answer, not to continue the dialogue. "
             "If you do not have enough data or capabilities to fulfill the request, explain it clearly without asking further questions."
         )
 
-        if allowed_tools == ["find_resources"]:
+        if tool_choice != "required":
+            instructions = (
+                "Do not answer requests that do not require the MCP tool, just explain what you can do. "
+                + instructions
+            )
+
+        if "find_resources" in allowed_tools:
             instructions += (
-                " When calling find_resources, derive tags from the user's request. "
+                " Use find_resources for the resource-search request. "
+                "Derive tags from the user's request. "
                 "Set types to an empty list unless the user explicitly requests a content format. "
                 "Do not invent type values."
             )

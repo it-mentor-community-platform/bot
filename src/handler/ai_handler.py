@@ -64,17 +64,11 @@ async def ask_ai(
 
     chat_member = await update.get_bot().get_chat_member(chat.id, chat_member.id)
 
-    command_text = command_message.text
-
-    assert command_text is not None, "Command text cannot be None"
-
-    message_text = command_text[len("/" + command_name) :]
+    message_text = " ".join(context.args)
 
     if len(message_text.strip()) == 0:
         log.error(f"{command_name} was called with no argument, expected 1")
-        await reply_with_error(
-            f"Команда {command_name} должна вызываться с запросом к LLM"
-        )
+        await reply_with_error(f"Команда {command_name} должна вызываться с запросом")
         return
 
     sent_message: Message | None = None
