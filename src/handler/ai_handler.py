@@ -64,7 +64,14 @@ async def ask_ai(
 
     chat_member = await update.get_bot().get_chat_member(chat.id, chat_member.id)
 
-    message_text = " ".join(context.args)
+    command_text = command_message.text
+
+    assert command_text is not None, "Command text cannot be None"
+
+    if command_name == SEARCH_COMMAND:
+        message_text = " ".join(context.args)
+    else:
+        message_text = command_text[len("/" + command_name) :]
 
     if len(message_text.strip()) == 0:
         log.error(f"{command_name} was called with no argument, expected 1")
