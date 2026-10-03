@@ -69,7 +69,8 @@ async def ask_ai(
     assert command_text is not None, "Command text cannot be None"
 
     if command_name == SEARCH_COMMAND:
-        message_text = " ".join(context.args)
+        args = context.args
+        message_text = " ".join(args) if args else ""
     else:
         message_text = command_text[len("/" + command_name) :]
 
