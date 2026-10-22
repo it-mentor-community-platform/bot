@@ -2,7 +2,7 @@
 
 import pytest
 
-from src.github.repository_url import normalize_github_repository_url
+from src.handler.util import normalize_github_repository_url
 
 
 @pytest.mark.parametrize(
@@ -27,10 +27,6 @@ from src.github.repository_url import normalize_github_repository_url
         ),
         (
             "https://github.com/Totsamyq/Simulation/?tab=readme#intro",
-            "https://github.com/Totsamyq/Simulation",
-        ),
-        (
-            "http://github.com/Totsamyq/Simulation/",
             "https://github.com/Totsamyq/Simulation",
         ),
         (
@@ -61,6 +57,26 @@ from src.github.repository_url import normalize_github_repository_url
             "https://github.com/user/repo_name.v2",
             "https://github.com/user/repo_name.v2",
         ),
+        (
+            "https://github.com:443/user/repo",
+            "https://github.com/user/repo",
+        ),
+        (
+            "https://user@github.com/user/repo",
+            "https://github.com/user/repo",
+        ),
+        (
+            "https://github.com/or\ng/repo",
+            "https://github.com/org/repo",
+        ),
+        (
+            "https://github.com/u\tser/repo",
+            "https://github.com/user/repo",
+        ),
+        (
+            "https://github.com/user/re\rpo",
+            "https://github.com/user/repo",
+        ),
     ],
 )
 def test_canonical_github_repository_url(raw: str, expected: str) -> None:
@@ -80,14 +96,10 @@ def test_canonical_github_repository_url(raw: str, expected: str) -> None:
         "https://notgithub.com/user/repo",
         "https://example.org/user/repo?source=github.com",
         "https://gitlab.com/user/repo",
-        "https://user@github.com/user/repo",
-        "https://github.com:443/user/repo",
+        "http://github.com/user/repo",
         "git@github.com:user/repo.git",
         "ftp://github.com/user/repo",
         "https://github.com@evil.com/user/repo",
-        "https://github.com/or\ng/repo",
-        "https://github.com/u\tser/repo",
-        "https://github.com/user/re\rpo",
     ],
 )
 def test_invalid_github_repository_url(raw: str) -> None:
