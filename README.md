@@ -105,3 +105,14 @@ yoyo apply --database postgresql://user:password@localhost:5433/it-mentor-commun
 
  - C помощью UI pycharm
  - Через `python -m src.main`
+
+## Локальные проверки перед PR
+
+Запуск unit-тестов нормализации GitHub-ссылок (без запуска бота и без `.env`):
+
+```sh
+python -m pip install pytest==8.3.4 mistune==3.2.0
+python -m pytest -q tests
+```
+
+`mistune` требуется модулю `src.handler.util`, где находится функция нормализации. Те же тесты запускаются в GitHub Actions.

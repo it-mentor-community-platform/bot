@@ -12,6 +12,7 @@ from src.config import constants
 from src.google_sheet import google_sheet_service
 from src import repository
 from src.github import github_client
+from src.handler.util import normalize_github_repository_url
 
 ADD_PROJECT_COMMAND_NAME = "addproject"
 
@@ -120,7 +121,14 @@ async def add_project(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await reply_with_error("В сообщении нет ссылки на проект")
         return
 
-    if "github.com" in project_link:
+    if "github.com" in project_link.lower():
+        try:
+            project_link = normalize_github_repository_url(project_link)
+        except ValueError as e:
+            log.warning("Invalid GitHub repository URL %r: %s", project_link, e)
+            await reply_with_error("Некорректная ссылка на GitHub репозиторий")
+            return
+
         repository_available = github_client.is_repository_available(project_link)
 
         if repository_available is None:
@@ -141,6 +149,8 @@ async def add_project(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 message_id=command_message.id,
             )
             return
+    elif not project_link.lower().startswith(("http://", "https://")):
+        project_link = "https://" + project_link
 
     try:
         google_sheet_service.add_project(project_name, language, project_link)
@@ -198,7 +208,7 @@ def parse_link(message: Message) -> str | None:
         if link is None:
             continue
 
-        message_links.add(normalize_link(link))
+        message_links.add(link)
 
     if len(message_links) == 1:
         return message_links.pop()
@@ -210,13 +220,6 @@ def parse_link(message: Message) -> str | None:
             return link
 
     return None
-
-
-def normalize_link(link: str) -> str:
-    if link.startswith("http"):
-        return link
-
-    return "https://" + link
 
 
 def extract_link(message_entity: MessageEntity, value: str) -> str | None:
