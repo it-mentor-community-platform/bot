@@ -149,7 +149,7 @@ async def add_project(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 message_id=command_message.id,
             )
             return
-    elif not project_link.lower().startswith(("http://", "https://")):
+    if not project_link.lower().startswith(("http://", "https://")):
         project_link = "https://" + project_link
 
     try:
