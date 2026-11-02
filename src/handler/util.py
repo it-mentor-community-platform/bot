@@ -1,5 +1,7 @@
 import logging
 import re
+from urllib.parse import urlsplit
+
 import mistune
 from typing import Any, override
 
@@ -23,6 +25,28 @@ PROJECT_RUSSIAN_NAMES = {
     constants.PROJECT_TASK_TRACKER: "Планировщик задач",
     "other": "Другое",
 }
+
+
+def normalize_github_repository_url(repository_url: str) -> str:
+    candidate = repository_url.strip()
+    if "://" not in candidate:
+        candidate = "https://" + candidate
+
+    parsed = urlsplit(candidate)
+    if parsed.scheme != "https" or parsed.hostname not in {"github.com", "www.github.com"}:
+        raise ValueError("Not a GitHub repository URL")
+
+    parts = parsed.path.strip("/").split("/")
+    if len(parts) < 2:
+        raise ValueError("GitHub repository URL must contain owner and repo")
+
+    owner, repo = parts[:2]
+    repo = repo.removesuffix(".git")
+
+    if not owner or not repo:
+        raise ValueError("Invalid GitHub repository owner or name")
+
+    return f"https://github.com/{owner}/{repo}"
 
 
 def escape_special_chars(text: str) -> str:
