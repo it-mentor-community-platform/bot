@@ -48,6 +48,7 @@ from src.handler.update_interview_questions_popularity_handler import (
 from src.metrics.telegram_instrumentation import instrument_application
 from src.metrics.metrics_endpoint import metrics_app
 from src.adapter_client import fetch_and_process_tasks
+from src.models_pricing import check_pricing_for_configured_models
 
 logs.configure()
 
@@ -130,6 +131,7 @@ async def start_adapter_polling() -> None:
 
 
 async def main() -> None:
+    check_pricing_for_configured_models()
     async with asyncio.TaskGroup() as tg:
         tg.create_task(start_bot())
         tg.create_task(start_metrics_server())
